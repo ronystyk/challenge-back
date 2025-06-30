@@ -8,7 +8,7 @@ Este proyecto es una solución al reto propuesto. Conecta a una API externa, alm
 
 ```bash
 git clone https://github.com/ronystyk/challenge-back.git
-cd challenge
+cd challenge-back
 ```
 
 ### 2. Configura las variables de entorno
