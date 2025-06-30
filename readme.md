@@ -7,7 +7,7 @@ Este proyecto es una solución al reto propuesto. Conecta a una API externa, alm
 ### 1. Clona el repositorio
 
 ```bash
-git clone https://github.com/tuusuario/challenge.git
+git clone https://github.com/ronystyk/challenge-back.git
 cd challenge
 ```
 
