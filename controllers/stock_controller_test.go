@@ -1,8 +1,7 @@
-package tests
+package controllers
 
 import (
 	"challenge/config"
-	"challenge/controllers"
 	"challenge/services"
 	"io"
 	"net/http"
@@ -15,7 +14,10 @@ import (
 )
 
 func TestGetStocks(t *testing.T) {
-	db := config.InitTestDB(t)
+	db, err := config.InitTestDB(t)
+	if err != nil {
+		t.Fatalf("Error al inicializar la base de datos: %v", err)
+	}
 
 	// Cargar datos de prueba
 	db.Create(&models.Stock{
@@ -33,7 +35,7 @@ func TestGetStocks(t *testing.T) {
 	stockService := services.NewStockService(db)
 
 	// Inyección en el controlador
-	handler := controllers.NewStockController(stockService)
+	handler := NewStockController(stockService)
 
 	req := httptest.NewRequest(http.MethodGet, "/stocks?page=1&limit=10", nil)
 	w := httptest.NewRecorder()
@@ -50,7 +52,10 @@ func TestGetStocks(t *testing.T) {
 }
 
 func TestGetRecommendations(t *testing.T) {
-	db := config.InitTestDB(t)
+	db, err := config.InitTestDB(t)
+	if err != nil {
+		t.Fatalf("Error al inicializar la base de datos: %v", err)
+	}
 
 	// Cargar datos de prueba
 	db.Create(&models.Stock{
@@ -68,7 +73,7 @@ func TestGetRecommendations(t *testing.T) {
 	stockService := services.NewStockService(db)
 
 	// Inyección en el controlador
-	handler := controllers.NewStockController(stockService)
+	handler := NewStockController(stockService)
 
 	req := httptest.NewRequest(http.MethodGet, "/recommendations", nil)
 	w := httptest.NewRecorder()
@@ -89,13 +94,16 @@ func TestSyncStocks(t *testing.T) {
 	if err != nil {
 		t.Error("⚠️  No se pudo cargar el archivo .env (puede ser normal en algunos entornos)")
 	}
-	db := config.InitTestDB(t)
+	db, err := config.InitTestDB(t)
+	if err != nil {
+		t.Fatalf("Error al inicializar la base de datos: %v", err)
+	}
 
 	// Servicio de stock
 	stockService := services.NewStockService(db)
 
 	// Inyección en el controlador
-	handler := controllers.NewStockController(stockService)
+	handler := NewStockController(stockService)
 
 	req := httptest.NewRequest(http.MethodPost, "/sync-stocks", nil)
 	w := httptest.NewRecorder()

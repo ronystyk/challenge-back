@@ -46,7 +46,7 @@ curl --location --request POST 'http://localhost:8080/sync-stocks'
 ## Ejecutar pruebas unitarias
 
 ```bash
-go test .\tests\
+go test ./... -v
 ```
 
 ## Terraform IaC

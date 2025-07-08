@@ -6,6 +6,7 @@ import (
 
 	"challenge/config"
 	"challenge/routes"
+	"challenge/services"
 
 	"github.com/gorilla/handlers"
 	"github.com/joho/godotenv"
@@ -13,19 +14,28 @@ import (
 
 func main() {
 	// Cargar variables de entorno
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error al cargar el archivo .env")
+	}
 
 	// Inicializar base de datos y servicios
-	db := config.InitDB()
-	services := config.InitServices(db)
+	db, err := config.InitDB()
+	if err != nil {
+		log.Fatal("Error al conectar a la base de datos:", err)
+	}
+	srvs := services.InitServices(db)
 
 	// Configurar rutas
-	router := routes.SetupRoutes(services)
+	router := routes.SetupRoutes(srvs)
 
 	// Configurar CORS
 	corsAllowedOrigins, corsAllowedMethods, corsAllowedHeaders := routes.SetupCors(router)
 
 	// Configurar
 	log.Println("Servidor en http://localhost:8080")
-	http.ListenAndServe(":8080", handlers.CORS(corsAllowedOrigins, corsAllowedMethods, corsAllowedHeaders)(router))
+	err = http.ListenAndServe(":8080", handlers.CORS(corsAllowedOrigins, corsAllowedMethods, corsAllowedHeaders)(router))
+	if err != nil {
+		log.Fatal("Error al iniciar el servidor:", err)
+	}
 }

@@ -1,17 +1,15 @@
-package config
+package services
 
 import (
-	"challenge/services"
-
 	"gorm.io/gorm"
 )
 
 type Services struct {
-	StockService *services.StockService
+	StockService *StockService
 }
 
 func InitServices(db *gorm.DB) *Services {
 	return &Services{
-		StockService: services.NewStockService(db),
+		StockService: NewStockService(db),
 	}
 }

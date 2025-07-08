@@ -64,7 +64,7 @@ func (c *StockController) GetRecommendations(w http.ResponseWriter, r *http.Requ
 func (c *StockController) SyncStocks(w http.ResponseWriter, r *http.Request) {
 	stocks, err := fetcher.FetchAllStocks()
 	if err != nil {
-		http.Error(w, "Error al obtener datos de la API", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

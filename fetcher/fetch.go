@@ -20,8 +20,37 @@ type apiResponse struct {
 func parseDollar(s string) float64 {
 	s = strings.ReplaceAll(s, "$", "")
 	s = strings.ReplaceAll(s, ",", "")
-	f, _ := strconv.ParseFloat(s, 64)
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0.0
+	}
 	return f
+}
+
+func getAPIData(url string, apiKey string) (*apiResponse, error) {
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("error al obtener datos de la API" + ": " + resp.Status)
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	var data apiResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
 }
 
 func FetchAllStocks() ([]models.Stock, error) {
@@ -40,24 +69,10 @@ func FetchAllStocks() ([]models.Stock, error) {
 			url += "?next_page=" + page
 		}
 
-		req, _ := http.NewRequest("GET", url, nil)
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := http.DefaultClient.Do(req)
+		data, err := getAPIData(url, apiKey)
 		if err != nil {
 			return nil, err
 		}
-
-		if resp.StatusCode != 200 {
-			return nil, errors.New("error al obtener datos de la API")
-		}
-
-		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
-
-		var data apiResponse
-		json.Unmarshal(body, &data)
 
 		for _, item := range data.Items {
 			stock := models.Stock{

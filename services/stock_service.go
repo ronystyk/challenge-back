@@ -2,6 +2,7 @@ package services
 
 import (
 	"challenge/models"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -22,18 +23,26 @@ func (s *StockService) SaveStocks(stocks []models.Stock) error {
 func (s *StockService) GetPaginatedStocks(page, limit int, filter string) ([]models.Stock, int64, error) {
 	var stocks []models.Stock
 	var total int64
+	var filterLower string = strings.ToLower(filter)
 
-	s.db.Model(&models.Stock{}).Where("ticker LIKE ?", "%"+filter+"%").Or("company LIKE ?", "%"+filter+"%").Count(&total)
+	result := s.db.Model(&models.Stock{}).Where("LOWER(ticker) LIKE ?", "%"+filterLower+"%").Or("LOWER(company) LIKE ?", "%"+filterLower+"%").Count(&total)
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
 	offset := (page - 1) * limit
+	result = s.db.Order("time desc").Limit(limit).Offset(offset).Where("LOWER(ticker) LIKE ?", "%"+filterLower+"%").Or("LOWER(company) LIKE ?", "%"+filterLower+"%").Find(&stocks)
+	if result.Error != nil {
+		return nil, total, result.Error
+	}
 
-	result := s.db.Order("time desc").Limit(limit).Offset(offset).Where("ticker LIKE ?", "%"+filter+"%").Or("company LIKE ?", "%"+filter+"%").Find(&stocks)
-	return stocks, total, result.Error
+	return stocks, total, nil
 }
 
 func (s *StockService) GetRecommendations() ([]models.Stock, error) {
 	var recommended []models.Stock
 
-	err := s.db.Raw(`
+	result := s.db.Raw(`
         SELECT * 
 		FROM stocks
 		WHERE target_from > 0 AND target_to > 0
@@ -52,7 +61,10 @@ func (s *StockService) GetRecommendations() ([]models.Stock, error) {
 			) * ((target_to - target_from) / target_from * 100)
 		) DESC
 		LIMIT 12
-    `).Scan(&recommended).Error
+    `).Scan(&recommended)
+	if result.Error != nil {
+		return nil, result.Error
+	}
 
-	return recommended, err
+	return recommended, nil
 }

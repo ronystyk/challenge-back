@@ -2,7 +2,6 @@ package config
 
 import (
 	"challenge/models"
-	"log"
 	"os"
 	"testing"
 
@@ -11,30 +10,29 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB() *gorm.DB {
+func InitDB() (*gorm.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to DB:", err)
+		return nil, err
 	}
 
 	if err := db.AutoMigrate(&models.Stock{}); err != nil {
-		log.Fatal("Failed to migrate DB:", err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }
 
-func InitTestDB(t *testing.T) *gorm.DB {
+func InitTestDB(t *testing.T) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
-		t.Fatalf("Failed to connect to test DB: %v", err)
+		return nil, err
 	}
 
-	// Migraciones de prueba
 	if err := db.AutoMigrate(&models.Stock{}); err != nil {
-		t.Fatalf("Failed to migrate test DB: %v", err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }

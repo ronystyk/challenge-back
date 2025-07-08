@@ -1,13 +1,13 @@
 package routes
 
 import (
-	"challenge/config"
 	"challenge/controllers"
+	"challenge/services"
 
 	"github.com/gorilla/mux"
 )
 
-func SetupRoutes(services *config.Services) *mux.Router {
+func SetupRoutes(services *services.Services) *mux.Router {
 	// Inicializar controladores
 	stockController := controllers.NewStockController(services.StockService)
 
